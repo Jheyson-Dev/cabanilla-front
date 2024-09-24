@@ -8,8 +8,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useQuery } from "@tanstack/react-query";
+
 import {
   Add01Icon,
+  Cancel01Icon,
+  CheckmarkCircle01Icon,
   Download04Icon,
   Loading03Icon,
   Search01Icon,
@@ -17,45 +21,27 @@ import {
 } from "hugeicons-react";
 
 // LIBRERIAS EXTERNAS
-// import moment from "moment";
-// import { Input } from "@/components/ui/input";
-// import { useQuery } from "react-query";
-// import request, { gql } from "graphql-request";
+import moment from "moment";
+import { Users } from "@/types/user";
+import { createAllUsersQuery } from "@/graphql/queries/createUsersQuery";
+import { getUsersApi } from "@/service/api";
 
-// export const allUsersQuery = gql`
-//   query {
-//     getAllUsers {
-//       id
-//       username
-//       password
-//       status
-//       personId
-//       createdAt
-//       updatedAt
-//     }
-//   }
-// `;
+// Ejemplo de uso
+const fields = ["id", "username", "status", "createdAt", "updatedAt"];
+const allUsersQuery = createAllUsersQuery(fields);
 
 export const User = () => {
-  // const { data, isLoading, error } = useQuery({
-  //   queryKey: ["users"],
-  //   queryFn: async () => {
-  //     console.log(
-  //       "Realizo la peticion a: " + import.meta.env.VITE_GRAPHQL_ENDPOINT
-  //     );
-  //     const data = await request(
-  //       `${import.meta.env.VITE_GRAPHQL_ENDPOINT}`,
-  //       allUsersQuery
-  //     );
-  //     return data;
-  //   },
-  // });
-
-  // console.log(data);
-  // console.warn(error);
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["users"],
+    queryFn: async () => {
+      return await getUsersApi(allUsersQuery);
+    },
+  });
+  console.log(data);
   return (
     <div className="relative  border bg-background rounded-xl p-4">
-      {/* {isLoading && <LoadingOverlay />} */}
+      {isLoading && <LoadingOverlay />}
+      {error && <div>{JSON.stringify(error)}</div>}
 
       <div className="flex justify-between items-center p-4 rounded-lg border">
         <div className="space-x-2">
@@ -110,12 +96,14 @@ export const User = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {/* {data &&
-              data?.getAllUsers?.map((user: any) => (
+            {data &&
+              data?.map((user: Users) => (
                 <TableRow key={user.id}>
                   <TableCell>{user.id}</TableCell>
                   <TableCell>{user.username}</TableCell>
-                  <TableCell>{String(user.status)}</TableCell>
+                  <TableCell>
+                    <StatusIndicator status={user.status} />
+                  </TableCell>
                   <TableCell>
                     {moment(user.createdAt).format("DD/MM/YYYY")}
                   </TableCell>
@@ -123,11 +111,28 @@ export const User = () => {
                     {moment(user.updatedAt).format("DD/MM/YYYY")}
                   </TableCell>
                 </TableRow>
-              ))} */}
+              ))}
           </TableBody>
         </Table>
       </div>
       <div></div>
+    </div>
+  );
+};
+
+interface StatusIndicatorProps {
+  status: boolean | undefined;
+}
+
+const StatusIndicator: React.FC<StatusIndicatorProps> = ({ status }) => {
+  return (
+    <div className="flex items-center">
+      {status ? (
+        <CheckmarkCircle01Icon className="text-green-500 w-5 h-5" />
+      ) : (
+        <Cancel01Icon className="text-red-500 w-5 h-5" />
+      )}
+      <span className="ml-2">{status ? "Active" : "Inactive"}</span>
     </div>
   );
 };

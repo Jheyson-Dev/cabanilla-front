@@ -12,38 +12,46 @@ import {
 import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
 import { Label } from "../components/ui/label";
-
-interface IFormInput {
-  username: string;
-  password: string;
-}
+import { useMutation } from "@tanstack/react-query";
+import { graphqlClient } from "@/graphqlClient";
+import { LOGIN_MUTATION } from "@/graphql/mutations";
+import { LoginInput } from "@/types";
 
 export const Login: React.FC = () => {
   const {
     register,
     handleSubmit,
-    watch,
     formState: { errors },
-  } = useForm<IFormInput>();
+  } = useForm<LoginInput>();
 
   const navigate = useNavigate();
 
-  const onSubmit: SubmitHandler<IFormInput> = async (data) => {
-    // const loginPromise = () => login({ variables: data });
-    // toast.promise(loginPromise, {
-    //   loading: "Loading...",
-    //   success: (response) => {
-    //     const { accessToken: token, refreshToken } = response.data.login;
-    //     localStorage.setItem("authToken", token);
-    //     localStorage.setItem("refreshToken", refreshToken);
-    //     navigate("/");
-    //     return "Login successful";
-    //   },
-    //   error: (error) => {
-    //     return error.graphQLErrors[0].message;
-    //   },
-    //   duration: 1000,
-    // });
+  const mutation = useMutation({
+    mutationFn: async (data: LoginInput) => {
+      const response = await graphqlClient.request(LOGIN_MUTATION, { data });
+      return response;
+    },
+  });
+
+  const onSubmit: SubmitHandler<LoginInput> = async (data: LoginInput) => {
+    const loginPromise = mutation.mutateAsync(data);
+
+    toast.promise(loginPromise, {
+      loading: "Loading...",
+      success: (response) => {
+        const { accessToken: token, refreshToken } = (
+          response as { login: { accessToken: string; refreshToken: string } }
+        ).login;
+        localStorage.setItem("authToken", token);
+        localStorage.setItem("refreshToken", refreshToken);
+        navigate("/");
+        return "Login successful";
+      },
+      error: (error) => {
+        return error.response.errors[0].message;
+      },
+      duration: 1000,
+    });
   };
 
   return (
@@ -80,9 +88,13 @@ export const Login: React.FC = () => {
                 <p className="text-error text-sm">{errors.password.message}</p>
               )}
             </div>
-            {/* <Button type="submit" className="btn-class" disabled={loading}>
-              {loading ? "Signing In..." : "Sign In"}
-            </Button> */}
+            <Button
+              type="submit"
+              className="btn-class"
+              disabled={mutation.isPending}
+            >
+              {mutation.isPending ? "Signing In..." : "Sign In"}
+            </Button>
           </form>
         </CardContent>
       </Card>

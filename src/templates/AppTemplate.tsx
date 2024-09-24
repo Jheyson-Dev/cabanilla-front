@@ -135,7 +135,7 @@ export const App: React.FC = () => {
         >
           <ul className="space-y-2">
             {optionsNav.map((option) => (
-              <li>
+              <li key={option.path}>
                 <NavLink
                   to={option.path}
                   className={({ isActive, isPending }) =>
