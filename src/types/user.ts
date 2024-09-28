@@ -6,4 +6,5 @@ export interface Users {
   personId?: number;
   createdAt?: Date;
   updatedAt?: Date;
+  options?: string;
 }

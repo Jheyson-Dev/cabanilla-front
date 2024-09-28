@@ -69,7 +69,6 @@ export const Login: React.FC = () => {
               <Label htmlFor="username">Username</Label>
               <Input
                 {...register("username", { required: "Username is required" })}
-                className="input-class"
                 id="username"
               />
               {errors.username && (
@@ -81,7 +80,6 @@ export const Login: React.FC = () => {
               <Input
                 type="password"
                 {...register("password", { required: "Password is required" })}
-                className="input-class"
                 id="password"
               />
               {errors.password && (
