@@ -1,12 +1,6 @@
 import { LoadingOverlay } from "@/components/shared/LoadingOverlay";
-import { Button } from "@/components/ui/button";
-
-import { PersonInput } from "@/types";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-
-import { Add01Icon, Download04Icon, Upload04Icon } from "hugeicons-react";
-import { PersonManagment } from "./PersonManagment";
-
+import { useAllSuppleirs } from "@/hooks/useQuerySupplier";
+import { SupplierManagment } from "./SupplierManagment";
 //  IMPORT DE LOS COMPONENTES DE SHADCN
 import {
   Dialog,
@@ -16,99 +10,86 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Add01Icon, Download04Icon, Upload04Icon } from "hugeicons-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Controller, SubmitHandler, useForm } from "react-hook-form";
-import { graphqlClient } from "@/graphqlClient";
-import { toast } from "sonner";
-import { CREATE_PERSON_AND_USER_MUTATION } from "@/graphql/mutations/person";
+import { SubmitHandler, useForm } from "react-hook-form";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { SupplierInput } from "@/types";
 import { useState } from "react";
-import { useAllUsers } from "@/hooks/useQueryUsers";
-import useALLRols from "@/hooks/useQueryRols";
+import { graphqlClient } from "@/graphqlClient";
+import { CREATE_SUPPLIER_MUTATION } from "@/graphql/mutations";
+import { toast } from "sonner";
 
-//  CAMPOS PARA LAS CONSULTAS
-const fields: string[] = [
-  "users { id name lastname dni email phone status  user { username status roles { rol { name } } } }",
-  "count",
+const fields = [
+  "id",
+  "name,",
+  "address",
+  "city",
+  "country",
+  "phone",
+  "email",
+  "status",
 ];
 
-const fieldsRol: string[] = ["id", "name"];
-
-export const Personlist = () => {
+export const SupplierList = () => {
   const queryClient = useQueryClient();
+
+  const { data, isLoading, error } = useAllSuppleirs(fields);
 
   //  ESTADO PARA EL DIALOG
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-
-  // // PETICION DE LOS DATOS DE LAS PERSONAS
-  const { data, isLoading, error } = useAllUsers(fields);
-
-  //  PETICION DE LOS DATOS DE LOS ROLES
-  const { data: roles } = useALLRols(fieldsRol);
 
   //  REACT HOOK FORMS
   const {
     register,
     handleSubmit,
-    control,
     reset,
     formState: { errors },
-  } = useForm<PersonInput>();
+  } = useForm<SupplierInput>();
 
   //  MUTACION PARA CREAR UNA PERSONA
   const mutation = useMutation({
-    mutationFn: async ({ id, data }: { id: number; data: PersonInput }) => {
-      const response = await graphqlClient.request(
-        CREATE_PERSON_AND_USER_MUTATION,
-        {
-          id,
-          data,
-        }
-      );
+    mutationFn: async (data: SupplierInput) => {
+      const response = await graphqlClient.request(CREATE_SUPPLIER_MUTATION, {
+        data,
+      });
       reset();
       return response;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["users"],
+        queryKey: ["suppliers"],
         exact: true,
       });
     },
+    onError: (error) => {
+      console.error(error);
+    },
   });
 
-  const onSubmit: SubmitHandler<PersonInput> = async (data: PersonInput) => {
-    const id = data.id_rol; // Obtener el id_rol del formulario
-    delete data.id_rol; // Eliminar el atributo id_rol de data
-    console.log(id);
-    console.log(data);
-
-    if (id !== undefined) {
-      const personPromise = mutation.mutateAsync({ id, data });
-      setIsDialogOpen(false);
-      toast.promise(personPromise, {
-        loading: "Loading...",
-        success: (response) => {
-          console.log(response);
-          return "Person created";
-        },
-        error: (error) => {
-          return error.response.errors[0].message;
-        },
-        duration: 1000,
-      });
-    } else {
-      toast.error("Role ID is required");
-    }
+  const onSubmit: SubmitHandler<SupplierInput> = async (
+    data: SupplierInput
+  ) => {
+    // Filtrar las propiedades que son cadenas vacías
+    const filteredData = Object.fromEntries(
+      Object.entries(data).filter(([_, value]) => value !== "")
+    );
+    const personPromise = mutation.mutateAsync(filteredData as SupplierInput);
+    setIsDialogOpen(false);
+    toast.promise(personPromise, {
+      loading: "Loading...",
+      success: (response) => {
+        console.log(response);
+        return "Supplier created";
+      },
+      error: (error) => {
+        return error.response.errors[0].message;
+      },
+      duration: 1000,
+    });
   };
-
-  console.log(data);
 
   return (
     <div>
@@ -163,80 +144,65 @@ export const Personlist = () => {
                     )}
                   </div>
                   <div className="grid grid-cols-4 items-center gap-x-4">
-                    <Label htmlFor="lastname" className="text-left">
-                      Lastname :
+                    <Label htmlFor="address" className="text-left">
+                      Address :
                     </Label>
                     <Input
-                      id="lastname"
-                      {...register("lastname", {
-                        required: "Lastname is required",
-                        minLength: { value: 3, message: "Min length is 3" },
-                        maxLength: { value: 20, message: "Max length is 20" },
-                      })}
+                      id="address"
+                      {...register("address")}
                       // value="@peduarte"
                       className={`col-span-3 ${
-                        errors.lastname
+                        errors.address
                           ? "border-error focus-visible:ring-error"
                           : ""
                       }
                       }`}
                     />
-                    {errors.lastname && (
+                    {errors.address && (
                       <p className="text-error text-sm font-semibold col-start-2 col-span-3">
-                        {errors.lastname.message}
+                        {errors.address.message}
                       </p>
                     )}
                   </div>
                   <div className="grid grid-cols-4 items-center gap-x-4">
-                    <Label htmlFor="dni" className="text-left">
-                      Dni :
+                    <Label htmlFor="country" className="text-left">
+                      Country :
                     </Label>
                     <Input
-                      id="dni"
-                      {...register("dni", {
-                        required: "Dni is required",
-                        minLength: { value: 8, message: "Min length is 8" },
-                        maxLength: { value: 8, message: "Max length is 8" },
-                      })}
+                      id="country"
+                      {...register("country")}
                       // value="@peduarte"
                       className={`col-span-3 ${
-                        errors.dni
+                        errors.country
                           ? "border-error focus-visible:ring-error"
                           : ""
                       }
                       }`}
                     />
-                    {errors.dni && (
+                    {errors.address && (
                       <p className="text-error text-sm font-semibold col-start-2 col-span-3">
-                        {errors.dni.message}
+                        {errors.address.message}
                       </p>
                     )}
                   </div>
-                  <div className="grid grid-cols-4 items-center gap-x-4 space-y-2">
-                    <Label htmlFor="email" className="text-left">
-                      Email :
+                  <div className="grid grid-cols-4 items-center gap-x-4">
+                    <Label htmlFor="city" className="text-left">
+                      City :
                     </Label>
                     <Input
-                      id="email"
-                      type="email"
-                      {...register("email", {
-                        required: "Email is required",
-                        pattern: {
-                          value: /\S+@\S+\.\S+/,
-                          message: "Entered value does not match email format",
-                        },
-                      })}
+                      id="address"
+                      {...register("city")}
                       // value="@peduarte"
                       className={`col-span-3 ${
-                        errors.email
+                        errors.city
                           ? "border-error focus-visible:ring-error"
                           : ""
                       }
                       }`}
                     />
-                    {errors.email && (
+                    {errors.address && (
                       <p className="text-error text-sm font-semibold col-start-2 col-span-3">
-                        {errors.email.message}
+                        {errors.address.message}
                       </p>
                     )}
                   </div>
@@ -246,11 +212,7 @@ export const Personlist = () => {
                     </Label>
                     <Input
                       id="phone"
-                      {...register("phone", {
-                        required: "Phone is required",
-                        minLength: { value: 9, message: "Min length is 9" },
-                        maxLength: { value: 11, message: "Max length is 11" },
-                      })}
+                      {...register("phone")}
                       // value="@peduarte"
                       className={`col-span-3 ${
                         errors.phone
@@ -259,73 +221,34 @@ export const Personlist = () => {
                       }
                       }`}
                     />
-                    {errors.phone && (
+                    {errors.address && (
                       <p className="text-error text-sm font-semibold col-start-2 col-span-3">
-                        {errors.phone.message}
+                        {errors.address.message}
                       </p>
                     )}
                   </div>
                   <div className="grid grid-cols-4 items-center gap-x-4">
-                    <Label htmlFor="id_rol" className="text-left">
-                      Rol :
+                    <Label htmlFor="email" className="text-left">
+                      Email :
                     </Label>
-                    <Controller
-                      name="id_rol"
-                      control={control}
-                      render={({ field }) => (
-                        <div
-                          className={`col-span-3 ${
-                            errors.id_rol
-                              ? "border-error focus-visible:ring-error"
-                              : ""
-                          }
-                      }`}
-                        >
-                          <Select
-                            onValueChange={(value) =>
-                              field.onChange(Number(value))
-                            }
-                            value={field.value?.toString()}
-                          >
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Seleccione el rol" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {roles &&
-                                roles.map((role) => (
-                                  <SelectItem
-                                    key={role.id}
-                                    value={`${role.id}`}
-                                  >
-                                    {role.name}
-                                  </SelectItem>
-                                ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      )}
-                    />
-                    {/* <Input
-                      id="id_rol"
-                      {...register("id_rol", {
-                        required: "Phone is required",
-                        minLength: { value: 9, message: "Min length is 9" },
-                        maxLength: { value: 11, message: "Max length is 11" },
-                      })}
+                    <Input
+                      id="email"
+                      {...register("email")}
                       // value="@peduarte"
                       className={`col-span-3 ${
-                        errors.id_rol
+                        errors.email
                           ? "border-error focus-visible:ring-error"
                           : ""
                       }
                       }`}
-                    /> */}
-                    {errors.id_rol && (
+                    />
+                    {errors.address && (
                       <p className="text-error text-sm font-semibold col-start-2 col-span-3">
-                        {errors.id_rol.message}
+                        {errors.address.message}
                       </p>
                     )}
                   </div>
+
                   <Button
                     type="submit"
                     className="mt-4"
@@ -357,11 +280,7 @@ export const Personlist = () => {
           </Button>
         </div>
       </div>
-      <div className="py-4">
-        {data && (
-          <PersonManagment data={data.users ?? []} count={data.count ?? 0} />
-        )}
-      </div>
+      <div>{data && <SupplierManagment data={data ?? []} />}</div>
     </div>
   );
 };

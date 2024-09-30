@@ -1,8 +1,10 @@
 import { graphqlClient } from "@/graphqlClient";
-import { Rols } from "@/types";
+import { Supplier, Category, Rols, Product } from "@/types";
+import { Area } from "@/types/area";
 import { PersonAll, Persons } from "@/types/person";
 import { Users } from "@/types/user";
 
+// PETICIONES DE LOS DATOS DE USUARIOS
 export const getUsersApi = async (query: any): Promise<Users[]> => {
   const response: { getAllUsers: Users[] } = await graphqlClient.request(query);
   console.log(JSON.stringify(graphqlClient));
@@ -37,4 +39,70 @@ export const getRolByIdApi = async (query: any): Promise<Rols> => {
 
   const { getRolById } = response;
   return getRolById;
+};
+
+// PETICIONES DE LOS DATOS DE CATEGORY
+export const getCategoriesApi = async (query: any): Promise<Category[]> => {
+  const response: { getAllCategories: Category[] } =
+    await graphqlClient.request(query);
+  const { getAllCategories } = response;
+  return getAllCategories;
+};
+
+export const getCategoryByIdApi = async (query: any): Promise<Category> => {
+  const response: { getCategoryById: Category } = await graphqlClient.request(
+    query
+  );
+  const { getCategoryById } = response;
+  return getCategoryById;
+};
+
+// PETICIONES DE LOS DATOS DE SUPPLIER
+
+export const getSuppliersApi = async (query: any): Promise<Supplier[]> => {
+  const response: { getAllSuppliers: Supplier[] } = await graphqlClient.request(
+    query
+  );
+  const { getAllSuppliers } = response;
+  return getAllSuppliers;
+};
+
+export const getSupplierByIdApi = async (query: any): Promise<Supplier> => {
+  const response: { getSupplierById: Supplier } = await graphqlClient.request(
+    query
+  );
+  const { getSupplierById } = response;
+  return getSupplierById;
+};
+
+// PETICIONES DE LOS DATOS DE PRODUCTO
+
+export const getProductsApi = async (query: any): Promise<Product[]> => {
+  const response: { getAllProducts: Product[] } = await graphqlClient.request(
+    query
+  );
+  const { getAllProducts } = response;
+  return getAllProducts;
+};
+
+export const getProductByIdApi = async (query: any): Promise<Product> => {
+  const response: { getProductById: Product } = await graphqlClient.request(
+    query
+  );
+  const { getProductById } = response;
+  return getProductById;
+};
+
+// PETICIONES DE LOS DATOS DE AREA
+export const getAreasApi = async (query: any): Promise<Area[]> => {
+  const response: { getAllAreas: Area[] } = await graphqlClient.request(query);
+  const { getAllAreas } = response;
+  return getAllAreas;
+};
+
+export const getAreaByIdApi = async (query: any): Promise<Area> => {
+  const response: { getAreaById: Area } = await graphqlClient.request(query);
+
+  const { getAreaById } = response;
+  return getAreaById;
 };

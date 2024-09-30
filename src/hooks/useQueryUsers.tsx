@@ -19,7 +19,7 @@ export const useAllUsers = (fields: string[]) => {
 export const useByIdUser = (id: number, fields: string[]) => {
   const personByIdQuery = createPersonByIdQuery(id, fields);
   return useQuery({
-    queryKey: ["users", id],
+    queryKey: ["user", id],
     queryFn: async (): Promise<any> => {
       return await getPersonByIdApi(personByIdQuery);
     },

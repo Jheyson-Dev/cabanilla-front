@@ -2,7 +2,7 @@ import { LoadingOverlay } from "@/components/shared/LoadingOverlay";
 
 import { RolManagment } from "./RolManagment";
 
-import useALLRols from "@/hooks/rol/useQueryRols";
+import useALLRols from "@/hooks/useQueryRols";
 
 //  CAMPOS PARA LA CONSULTA
 const fields = ["id", "name", "status"];

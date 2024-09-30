@@ -6,11 +6,9 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { UPDATE_PERSON_AND_USER_MUTATION } from "@/graphql/mutations";
 
-import { createPersonByIdQuery } from "@/graphql/queries";
 import { graphqlClient } from "@/graphqlClient";
-import { getPersonByIdApi } from "@/service/api";
 import { PersonInput } from "@/types";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { Search01Icon } from "hugeicons-react";
 import { FC, useEffect } from "react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
@@ -23,8 +21,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import useALLRols from "@/hooks/rol/useQueryRols";
-import { useByIdUser } from "@/hooks/user/useQueryUsers";
+import useALLRols from "@/hooks/useQueryRols";
+import { useByIdUser } from "@/hooks/useQueryUsers";
 
 //  CAMPOS PARA LAS CONSULTA DE PERSONAS
 const fieldsUser: string[] = [

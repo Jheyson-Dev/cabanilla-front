@@ -6,14 +6,18 @@ import React, {
   useEffect,
 } from "react";
 
+import { jwtDecode } from "jwt-decode";
+
 interface AuthContextType {
   isAuthenticated: boolean;
+  role: string | null;
   // login: (token: string, refreshToken: string) => void;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
+  role: null,
   // login: () => {},
   logout: () => {},
 });
@@ -26,6 +30,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     return !!localStorage.getItem("authToken");
   });
 
+  const [role, setRole] = useState<string | null>(null);
+
   // const login = (token: string, refreshToken: string) => {
   //   localStorage.setItem("authToken", token);
   //   localStorage.setItem("refreshToken", refreshToken);
@@ -36,6 +42,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     localStorage.removeItem("authToken");
     localStorage.removeItem("refreshToken");
     setIsAuthenticated(false);
+    setRole(null);
   };
 
   useEffect(() => {
@@ -43,12 +50,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     // Optionally, you can add logic to validate the token here
     const token = localStorage.getItem("authToken");
     if (token) {
+      const decodedToken: any = jwtDecode(token);
+      setRole(decodedToken.rol);
       setIsAuthenticated(true);
+      console.log(decodedToken.rol);
+      // console.log("el rol es: " + role);
+      console.log(role);
+      console.log("autenticado? " + isAuthenticated);
     }
-  }, []);
+  }, [role]);
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, logout, role }}>
       {children}
     </AuthContext.Provider>
   );

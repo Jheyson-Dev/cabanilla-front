@@ -9,7 +9,7 @@ export const ErrorPage = () => {
       <p className="text-muted-foreground mb-8">
         Oops! The page you're looking for doesn't exist.
       </p>
-      <Link to="/auth/login">
+      <Link to="/">
         <Button variant="default">Return Home</Button>
       </Link>
     </div>
