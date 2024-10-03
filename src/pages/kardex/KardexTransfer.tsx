@@ -77,22 +77,23 @@ export const KardexTransfer = () => {
 
   const onSubmit: SubmitHandler<InputKardex> = (data: InputKardex) => {
     data.quantity = parseInt(data?.quantity.toString(), 10);
+    data.movementType = "TRANSFER";
     console.log(data);
     console.log(errors);
-    // const kardexPromise = mutation.mutateAsync(data);
-    // toast.promise(kardexPromise, {
-    //   loading: "Loading...",
-    //   success: (response) => {
-    //     console.log(response);
-    //     navigate("/kardex");
-    //     return "Person created";
-    //   },
-    //   error: (error) => {
-    //     console.error(error);
-    //     return error.response.errors[0].message;
-    //   },
-    //   duration: 1000,
-    // });
+    const kardexPromise = mutation.mutateAsync(data);
+    toast.promise(kardexPromise, {
+      loading: "Loading...",
+      success: (response) => {
+        console.log(response);
+        navigate("/kardex");
+        return "Person created";
+      },
+      error: (error) => {
+        console.error(error);
+        return error.response.errors[0].message;
+      },
+      duration: 1000,
+    });
   };
 
   return (
