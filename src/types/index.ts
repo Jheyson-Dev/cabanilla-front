@@ -1,5 +1,6 @@
 export * from './area';
 export * from './category';
+export * from './kardex';
 export * from './login';
 export * from './person';
 export * from './product';

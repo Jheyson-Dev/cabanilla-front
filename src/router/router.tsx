@@ -22,9 +22,13 @@ import { SupplierList } from "@/pages/supplier/SupplierList";
 import { SupplierEdit } from "@/pages/supplier/SupplierEdit";
 import { ProductList } from "@/pages/product/ProductList";
 import { ProductEdit } from "@/pages/product/ProductEdit";
-import { AreaTemplate } from "@/pages/area/areaTemplate";
 import { AreaList } from "@/pages/area/AreaList";
 import { AreaEdit } from "@/pages/area/AreaEdit";
+import { KardexList } from "@/pages/kardex/KardexList";
+import { AreaTemplate } from "@/pages/area/AreaTemplate";
+import { KardexCreate } from "@/pages/kardex/KardexCreate";
+import { KardexTemplate } from "@/pages/kardex/KardexTemplate";
+import { KardexTransfer } from "@/pages/kardex/KardexTransfer";
 
 export const router = createBrowserRouter([
   {
@@ -173,6 +177,32 @@ export const router = createBrowserRouter([
           {
             path: "edit/:id",
             element: <AreaEdit />,
+          },
+        ],
+      },
+      {
+        path: "kardex",
+        element: (
+          <ProtectedRoute allowedRoles={["Admin", "EncargadoAlmacen"]}>
+            <KardexTemplate />
+          </ProtectedRoute>
+        ),
+        children: [
+          {
+            index: true,
+            element: (
+              <ProtectedRoute allowedRoles={["Admin", "EncargadoAlmacen"]}>
+                <KardexList />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "create",
+            element: <KardexCreate />,
+          },
+          {
+            path: "transfer",
+            element: <KardexTransfer />,
           },
         ],
       },

@@ -52,4 +52,10 @@ export const navOptions: NavOption[] = [
     icon: <DashboardSquare01Icon size={20} />,
     allowedRoles: ["Admin", "EncargadoAlmacen"],
   },
+  {
+    path: "/kardex",
+    name: "Kardex",
+    icon: <DashboardSquare01Icon size={20} />,
+    allowedRoles: ["Admin", "EncargadoAlmacen"],
+  },
 ];

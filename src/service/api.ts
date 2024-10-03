@@ -1,7 +1,8 @@
 import { graphqlClient } from "@/graphqlClient";
-import { Supplier, Category, Rols, Product } from "@/types";
+import { Supplier, Category, Rols, Product, kardex } from "@/types";
 import { Area } from "@/types/area";
 import { PersonAll, Persons } from "@/types/person";
+import { Store } from "@/types/store";
 import { Users } from "@/types/user";
 
 // PETICIONES DE LOS DATOS DE USUARIOS
@@ -105,4 +106,30 @@ export const getAreaByIdApi = async (query: any): Promise<Area> => {
 
   const { getAreaById } = response;
   return getAreaById;
+};
+
+//  PETICIONES DE LOS DATOS DE KARDEX
+export const getKardexApi = async (query: any): Promise<kardex[]> => {
+  const response: { getAllInventoryMovements: kardex[] } =
+    await graphqlClient.request(query);
+
+  const { getAllInventoryMovements } = response;
+  return getAllInventoryMovements;
+};
+
+// PETICIONES DE LOS DATOS DE STORE
+export const getStoresApi = async (query: any): Promise<Store[]> => {
+  const response: { getAllStores: Store[] } = await graphqlClient.request(
+    query
+  );
+  const { getAllStores } = response;
+
+  return getAllStores;
+};
+
+export const getStoreByIdApi = async (query: any): Promise<Store> => {
+  const response: { getStoreById: Store } = await graphqlClient.request(query);
+  const { getStoreById } = response;
+
+  return getStoreById;
 };

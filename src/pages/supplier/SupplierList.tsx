@@ -37,6 +37,7 @@ export const SupplierList = () => {
   const queryClient = useQueryClient();
 
   const { data, isLoading, error } = useAllSuppleirs(fields);
+  console.log(data);
 
   //  ESTADO PARA EL DIALOG
   const [isDialogOpen, setIsDialogOpen] = useState(false);

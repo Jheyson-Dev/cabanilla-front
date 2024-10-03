@@ -1,4 +1,5 @@
 import { Category } from "./category";
+import { Store } from "./store";
 
 export interface Product {
   id: number;
@@ -11,4 +12,5 @@ export interface Product {
   status: boolean;
   category: Category;
   options?: string;
+  // stores?: Store[];
 }

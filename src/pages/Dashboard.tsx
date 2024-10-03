@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
+  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
@@ -17,10 +18,9 @@ import {
 } from "@/components/ui/table";
 import { useAuth } from "@/context/AuthContext";
 import { useAllCategories } from "@/hooks/useQueryCategory";
+import { useAllProducts } from "@/hooks/useQueryProduct";
 import { useAllUsers } from "@/hooks/useQueryUsers";
 import {
-  Alert01Icon,
-  CheckmarkCircle01Icon,
   Dollar01Icon,
   PackageIcon,
   ShoppingCart01Icon,
@@ -42,6 +42,9 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { useAllKardex } from "@/hooks/useQueryKardex";
+import { DateFormated } from "@/components/shared/DateFormated";
+import { Movements } from "@/components/shared/Movements";
 
 const lineChartData = [
   { name: "Ene", ventas: 4000 },
@@ -74,14 +77,29 @@ const fieldsCategories: string[] = [
   "status",
   "product { name quantityAvailable }",
 ];
+const fieldsKardex = [
+  "id",
+  "productId",
+  "originStoreId",
+  "destinationStoreId",
+  "quantity",
+  "movementType",
+  "movementDate",
+  "product { name }",
+  "originStore { nombre }",
+  "destinationStore { nombre }",
+];
+const fieldsProducts = ["id", "name", "quantityAvailable", "status"];
 export const Dashboard = () => {
   // CONSULTA DE TODOS LOS USUARIOS
-  const { data, isLoading } = useAllUsers(fields);
-  const { data: categories, isLoading: categoriesLoading } =
-    useAllCategories(fieldsCategories);
+  const { data: users, isLoading } = useAllUsers(fields);
+  const { data: categories } = useAllCategories(fieldsCategories);
+  const { data: products } = useAllProducts(fieldsProducts);
+  const { data: kardex } = useAllKardex(fieldsKardex);
+
   const { role } = useAuth();
 
-  console.log(categories);
+  console.log(products);
 
   // DATA OARA GRAFIO DE BARRAS PRODUCTOS POR CATEGORIA
   const barCategoriesData = categories?.map((category) => ({
@@ -90,7 +108,6 @@ export const Dashboard = () => {
   }));
 
   // DATA PARA EL GRAFIO DE CANTIDAD DE PRODUCTOD POR CATEGORIA
-  // Transformar los datos
   const barProductsData = categories?.flatMap((category) =>
     category?.product?.map((product) => ({
       name: product.name,
@@ -106,10 +123,15 @@ export const Dashboard = () => {
     { category: "Toys", count: 600 },
   ];
 
+  // Agrupar los productos por su estado
+  const availableCount =
+    products?.filter((product) => product.status).length || 0;
+  const unavailableCount = (products?.length ?? 0) - availableCount;
+
+  // Crear el array para el gráfico de pastel
   const inventoryStatus = [
-    { name: "In Stock", value: 3500, color: "#4CAF50" },
-    { name: "Low Stock", value: 1200, color: "#FFC107" },
-    { name: "Out of Stock", value: 400, color: "#F44336" },
+    { name: "Available", value: availableCount, color: "#00C49F" },
+    { name: "Unavailable", value: unavailableCount, color: "#FF8042" },
   ];
 
   const recentActivities = [
@@ -193,7 +215,7 @@ export const Dashboard = () => {
               <UserSearch01Icon className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{data?.count}</div>
+              <div className="text-2xl font-bold">{users?.count}</div>
               <p className="text-xs text-muted-foreground">
                 {/* +10% desde el último mes */}
               </p>
@@ -211,7 +233,7 @@ export const Dashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {data?.users.filter((user) => user.status === true).length}
+                {users?.users.filter((user) => user.status === true).length}
               </div>
               <p className="text-xs text-muted-foreground">
                 {/* +20.1% desde el último mes */}
@@ -229,7 +251,7 @@ export const Dashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {data?.users.filter((user) => user.status === false).length}
+                {users?.users.filter((user) => user.status === false).length}
               </div>
               <p className="text-xs text-muted-foreground">
                 {/* +5% desde la última semana */}
@@ -378,98 +400,25 @@ export const Dashboard = () => {
     <div className="grid gap-4">
       {/* Contenido específico para EncargadoAlmacen */}
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {categoriesLoading ? (
-          <CardSkeleton />
-        ) : (
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Categorias
-              </CardTitle>
-              {/* {isLoading && <Skeleton className="h-5 w-[100px]" />} */}
-              <UserSearch01Icon className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{categories?.length}</div>
-              <p className="text-xs text-muted-foreground">
-                {/* +10% desde el último mes */}
-              </p>
-            </CardContent>
-          </Card>
-        )}
-        {categoriesLoading ? (
-          <CardSkeleton />
-        ) : (
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Categorias en uso
-              </CardTitle>
-              {/* {isLoading && <Skeleton className="h-5 w-[100px]" />} */}
-              <UserSearch01Icon className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {categories?.filter((item) => item.status === true).length}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {/* +10% desde el último mes */}
-              </p>
-            </CardContent>
-          </Card>
-        )}
-        {categoriesLoading ? (
-          <CardSkeleton />
-        ) : (
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Categorias en desuso
-              </CardTitle>
-              {/* {isLoading && <Skeleton className="h-5 w-[100px]" />} */}
-              <UserSearch01Icon className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {categories?.filter((item) => item.status === false).length}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {/* +10% desde el último mes */}
-              </p>
-            </CardContent>
-          </Card>
-        )}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-4 pb-2">
-            <CardTitle className="text-sm font-medium">
-              No se que poner aqui
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <p>Algna data que pondremo</p>
-          </CardContent>
-        </Card>
-        {/* Más tarjetas o contenido específico para EncargadoAlmacen */}
-      </div>
-      {/* <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-4 pb-2">
-            <h2>Almacen Data 2</h2>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <p>Some more almacen-specific data</p>
-          </CardContent>
-        </Card>
-      </div> */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <Card>
           <CardHeader>
-            <CardTitle>Cantidad de Productos por categoria</CardTitle>
-            {/* <CardDescription>Top 4 productos más vendidos</CardDescription> */}
+            <CardTitle>Total Inventory Items</CardTitle>
           </CardHeader>
-          <CardContent className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <PackageIcon className="h-12 w-12 text-primary" />
+              <span className="text-4xl font-bold">{products?.length}</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Inventory by Category</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={200}>
               <BarChart data={barCategoriesData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
@@ -480,274 +429,107 @@ export const Dashboard = () => {
             </ResponsiveContainer>
           </CardContent>
         </Card>
-        {/* <Card>
+
+        <Card>
           <CardHeader>
-            <CardTitle>Cantidad de Productos disponibles</CardTitle>
-            <CardDescription>
-              Segmentación de clientes por grupo
-            </CardDescription>
+            <CardTitle>Inventory Status</CardTitle>
           </CardHeader>
-          <CardContent className="h-[300px]">
-            <ResponsiveContainer width="100%" height={400}>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={200}>
               <PieChart>
                 <Pie
-                  data={pieCategoriesData}
-                  dataKey="value"
-                  nameKey="name"
+                  data={inventoryStatus}
                   cx="50%"
                   cy="50%"
-                  outerRadius={150}
+                  outerRadius={80}
                   fill="#8884d8"
-                  // label
+                  dataKey="value"
+                  label={({ name, percent }) =>
+                    `${name} ${(percent * 100).toFixed(0)}%`
+                  }
                 >
-                  {pieCategoriesData?.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={COLORS[index % COLORS.length]}
-                    />
+                  {inventoryStatus?.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
                 <Tooltip />
               </PieChart>
             </ResponsiveContainer>
           </CardContent>
-        </Card> */}
-        {/* <Card className="col-span-2">
+        </Card>
+
+        <Card className="col-span-1 md:col-span-2 lg:col-span-3">
           <CardHeader>
-            <CardTitle>Resumen de Métricas</CardTitle>
-            <CardDescription>
-              Visión general de KPIs importantes
-            </CardDescription>
+            <CardTitle>Recent Activities</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <h3 className="text-lg font-semibold">Tasa de Conversión</h3>
-                <p className="text-2xl font-bold">3.2%</p>
-                <p className="text-sm text-muted-foreground">
-                  +0.2% vs mes anterior
-                </p>
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold">Promedio de Ticket</h3>
-                <p className="text-2xl font-bold">$85.20</p>
-                <p className="text-sm text-muted-foreground">
-                  -2.3% vs mes anterior
-                </p>
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold">Nuevos Clientes</h3>
-                <p className="text-2xl font-bold">+143</p>
-                <p className="text-sm text-muted-foreground">
-                  +12% vs mes anterior
-                </p>
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold">NPS</h3>
-                <p className="text-2xl font-bold">72</p>
-                <p className="text-sm text-muted-foreground">
-                  +5 puntos vs trimestre anterior
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card> */}
-      </div>
-      {/* <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="col-span-3">
-          <CardHeader>
-            <CardTitle>Cantidad de Productos disponibles</CardTitle>
-            <CardDescription>
-              Segmentación de productos por cantidad disponible
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="h-[600px]">
-            <ResponsiveContainer width="100%" height={600}>
-              <BarChart
-                data={barProductsData}
-                layout="vertical"
-                margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis type="number" tick={{ fontSize: 12 }} tickMargin={10} />
-                <YAxis
-                  type="category"
-                  dataKey="name"
-                  width={150}
-                  tick={{ fontSize: 12 }}
-                  tickMargin={10}
-                />
-                <Tooltip />
-                <Bar dataKey="quantity" fill="#8884d8" />
-              </BarChart>
-            </ResponsiveContainer>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Action</TableHead>
+                  <TableHead>Item</TableHead>
+                  <TableHead>Quantity</TableHead>
+                  <TableHead>Date</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {recentActivities.map((activity) => (
+                  <TableRow key={activity.id}>
+                    <TableCell>{activity.action}</TableCell>
+                    <TableCell>{activity.item}</TableCell>
+                    <TableCell>{activity.quantity}</TableCell>
+                    <TableCell>{activity.date}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </CardContent>
         </Card>
-      </div> */}
 
-      {/* <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-1">
-        <Card className="col-span-2">
+        <Card className="col-span-1 md:col-span-2 lg:col-span-3">
           <CardHeader>
-            <CardTitle>Ventas Mensuales</CardTitle>
-            <CardDescription>
-              Tendencia de ventas en los últimos 6 meses
-            </CardDescription>
+            <CardTitle>Detailed Inventory</CardTitle>
           </CardHeader>
-          <CardContent className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={lineChartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Line
-                  type="monotone"
-                  dataKey="ventas"
-                  stroke="#8884d8"
-                  activeDot={{ r: 8 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
+          <CardContent>
+            <Table>
+              <TableCaption>
+                Dashboard de Movimientos de Inventario
+              </TableCaption>
+              <TableHeader>
+                <TableRow>
+                  {/* <TableHead className="w-[50px]">ID</TableHead> */}
+                  <TableHead>Fecha de Movimiento</TableHead>
+                  <TableHead>Tipo</TableHead>
+                  <TableHead>Producto</TableHead>
+                  <TableHead className="text-right">Cantidad</TableHead>
+                  <TableHead>Origen</TableHead>
+                  <TableHead>Destino</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {kardex?.map((movement) => (
+                  <TableRow key={movement.id}>
+                    {/* <TableCell className="font-medium">{movement.id}</TableCell> */}
+                    <TableCell>
+                      <DateFormated date={movement.movementDate} />
+                    </TableCell>
+                    <TableCell>
+                      <Movements type={movement.movementType} />
+                    </TableCell>
+                    <TableCell>{movement.product.name}</TableCell>
+                    <TableCell className="text-right">
+                      {movement.quantity}
+                    </TableCell>
+                    <TableCell>
+                      {movement.originStore?.nombre || "N/A"}
+                    </TableCell>
+                    <TableCell>{movement.destinationStore.nombre}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </CardContent>
         </Card>
-      </div> */}
-      <div className="container mx-auto p-4">
-        <h1 className="text-3xl font-bold mb-6">System Inventory Dashboard</h1>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Total Inventory Items</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <PackageIcon className="h-12 w-12 text-primary" />
-                <span className="text-4xl font-bold">
-                  {totalItems.toLocaleString()}
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Inventory by Category</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={inventoryData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="category" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="count" fill="#8884d8" />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Inventory Status</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={200}>
-                <PieChart>
-                  <Pie
-                    data={inventoryStatus}
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                    label={({ name, percent }) =>
-                      `${name} ${(percent * 100).toFixed(0)}%`
-                    }
-                  >
-                    {inventoryStatus.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          <Card className="col-span-1 md:col-span-2 lg:col-span-3">
-            <CardHeader>
-              <CardTitle>Recent Activities</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Action</TableHead>
-                    <TableHead>Item</TableHead>
-                    <TableHead>Quantity</TableHead>
-                    <TableHead>Date</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {recentActivities.map((activity) => (
-                    <TableRow key={activity.id}>
-                      <TableCell>{activity.action}</TableCell>
-                      <TableCell>{activity.item}</TableCell>
-                      <TableCell>{activity.quantity}</TableCell>
-                      <TableCell>{activity.date}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-
-          <Card className="col-span-1 md:col-span-2 lg:col-span-3">
-            <CardHeader>
-              <CardTitle>Detailed Inventory</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead>In Stock</TableHead>
-                    <TableHead>Price</TableHead>
-                    <TableHead>Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {detailedInventory.map((item) => (
-                    <TableRow key={item.id}>
-                      <TableCell>{item.name}</TableCell>
-                      <TableCell>{item.category}</TableCell>
-                      <TableCell>{item.inStock}</TableCell>
-                      <TableCell>${item.price.toFixed(2)}</TableCell>
-                      <TableCell>
-                        {item.inStock > 50 ? (
-                          <Badge variant="default">
-                            <CheckmarkCircle01Icon className="w-4 h-4 mr-1" />
-                            In Stock
-                          </Badge>
-                        ) : item.inStock > 10 ? (
-                          <Badge variant="destructive">
-                            <Alert01Icon className="w-4 h-4 mr-1" />
-                            Low Stock
-                          </Badge>
-                        ) : (
-                          <Badge variant="destructive">
-                            <Alert01Icon className="w-4 h-4 mr-1" />
-                            Out of Stock
-                          </Badge>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </div>
       </div>
     </div>
   );

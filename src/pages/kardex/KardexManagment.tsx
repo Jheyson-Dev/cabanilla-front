@@ -1,6 +1,6 @@
+import { kardex } from "@/types";
 import { FC, useState } from "react";
 import { DateFormated } from "@/components/shared/DateFormated";
-import { StatusIndicator } from "@/components/shared/StatusIndicator";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -15,7 +15,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-
 import {
   Table,
   TableBody,
@@ -34,99 +33,94 @@ import {
   PaginationState,
 } from "@tanstack/react-table";
 import { FilterHorizontalIcon, Search01Icon, ViewIcon } from "hugeicons-react";
-import { Persons, Product } from "@/types"; // Assuming you have a Persons type defined
 import { Link } from "react-router-dom";
+import { Badge } from "@/components/ui/badge";
+import { Movements } from "@/components/shared/Movements";
 
 // Column helper for Persons type
-const columnHelper = createColumnHelper<Product>();
+const columnHelper = createColumnHelper<kardex>();
 
 interface Props {
-  data: Product[];
+  data: kardex[];
 }
-export const ProductManagment: FC<Props> = ({ data }) => {
-  // Define columns
-  const columns = [
-    columnHelper.accessor("name", {
-      header: () => <span>Name</span>,
-      cell: (info) => info.getValue(),
-      footer: (info) => info.column.id,
-      // enableResizing: true,
-    }),
-    columnHelper.accessor("description", {
-      header: () => <span>Description</span>,
-      cell: (info) => info.getValue(),
-      footer: (info) => info.column.id,
-      // enableResizing: true,
-    }),
-    columnHelper.accessor("price", {
-      header: () => <span>Price</span>,
-      cell: (info) => info.getValue(),
-      footer: (info) => info.column.id,
-      // enableResizing: true,
-    }),
-    columnHelper.accessor("quantityAvailable", {
-      header: () => <span>QuantityAvailable</span>,
-      cell: (info) => info.getValue(),
-      footer: (info) => info.column.id,
-      // enableResizing: true,
-    }),
 
-    columnHelper.accessor("status", {
-      header: () => <span>Status</span>,
-      cell: (info) => <StatusIndicator status={info.getValue()} />,
+export const KardexManagmen: FC<Props> = ({ data }) => {
+  const columns = [
+    columnHelper.accessor("movementDate", {
+      header: () => <span>Día Operation</span>,
+      cell: (info) => <DateFormated date={info.getValue()} />,
       footer: (info) => info.column.id,
       // enableResizing: true,
     }),
-    // columnHelper.accessor("rol", {
-    //   header: () => <span>Rol</span>,
-    //   cell: (row) => <div>{row.row.original.user?.roles[0]?.rol?.name}</div>,
+    columnHelper.accessor("product.name", {
+      header: () => <span>productId</span>,
+      cell: (info) => info.getValue(),
+      footer: (info) => info.column.id,
+      // enableResizing: true,
+    }),
+    columnHelper.accessor("originStore.nombre", {
+      header: () => <span>Tienda Origen</span>,
+      cell: (info) => info.getValue(),
+      footer: (info) => info.column.id,
+      // enableResizing: true,
+    }),
+    columnHelper.accessor("destinationStore.nombre", {
+      header: () => <span>Tienda Destino</span>,
+      cell: (info) => info.getValue(),
+      footer: (info) => info.column.id,
+      // enableResizing: true,
+    }),
+    columnHelper.accessor("quantity", {
+      header: () => <span>Cantidad</span>,
+      cell: (info) => info.getValue(),
+      footer: (info) => info.column.id,
+      // enableResizing: true,
+    }),
+    columnHelper.accessor("movementType", {
+      header: () => <span>Tipo movimiento</span>,
+      cell: (info) => <Movements type={info.getValue()} />,
+      footer: (info) => info.column.id,
+      // enableResizing: true,
+    }),
+    // columnHelper.accessor(".name", {
+    //   header: () => <span>Product</span>,
+    //   cell: (info) => info.getValue(),
     //   footer: (info) => info.column.id,
     //   // enableResizing: true,
     // }),
-    columnHelper.accessor("supplierId", {
-      header: () => <span>SupplierId</span>,
-      cell: (info) => info.getValue(),
-      footer: (info) => info.column.id,
-      // enableResizing: true,
-    }),
-    columnHelper.accessor("categoryId", {
-      header: () => <span>CategoryId</span>,
-      cell: (info) => info.getValue(),
-      footer: (info) => info.column.id,
-      // enableResizing: true,
-    }),
+
     // columnHelper.accessor("updateAt", {
     //   header: () => <span>Updated At</span>,
     //   cell: (info) => <DateFormated date={info.getValue()} />,
     //   footer: (info) => info.column.id,
     //   // enableResizing: true,
     // }),
-    columnHelper.accessor("options", {
-      header: () => <span>Actions</span>,
-      cell: (row) => (
-        <div className="flex items-center gap-4">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger
-                asChild
-                className="cursor-pointer flex items-center"
-              >
-                <Link to={`/product/edit/${row.row.original.id}`}>
-                  <ViewIcon size={20} />
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>View</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-          {/* <PersonDelete id={row.row.original.id} /> */}
-        </div>
-      ),
-      footer: (info) => info.column.id,
-      // cell: (row) => <PersonEdit id={row.row.original.id} />,
-      // enableResizing: true,
-    }),
+    // columnHelper.accessor("options", {
+    //   header: () => <span>Actions</span>,
+    //   cell: (row) => (
+    //     <div className="flex items-center gap-4">
+    //       <TooltipProvider>
+    //         <Tooltip>
+    //           <TooltipTrigger
+    //             asChild
+    //             className="cursor-pointer flex items-center"
+    //           >
+    //             <Link to={`/area/edit/${row.row.original.id}`}>
+    //               <ViewIcon size={20} />
+    //             </Link>
+    //           </TooltipTrigger>
+    //           <TooltipContent>
+    //             <p>View</p>
+    //           </TooltipContent>
+    //         </Tooltip>
+    //       </TooltipProvider>
+    //       {/* <AreaDelete id={row.row.original.id} /> */}
+    //     </div>
+    //   ),
+    //   footer: (info) => info.column.id,
+    //   // cell: (row) => <PersonEdit id={row.row.original.id} />,
+    //   // enableResizing: true,
+    // }),
   ];
 
   // State for filtering
@@ -159,10 +153,11 @@ export const ProductManagment: FC<Props> = ({ data }) => {
     getPaginationRowModel: getPaginationRowModel(),
     onPaginationChange: setPagination,
   });
+
   return (
     <div className="p-2">
       <div className="font-semibold text-xl p-4 flex justify-between">
-        Person Management
+        Inventory Detail
         <div className="flex gap-4">
           <div className="relative w-full max-w-sm">
             <Search01Icon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
@@ -250,7 +245,7 @@ export const ProductManagment: FC<Props> = ({ data }) => {
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-center space-x-2 py-4">
+      <div className="flex items-center justify-end space-x-2 py-4">
         <Button
           variant="outline"
           size="sm"

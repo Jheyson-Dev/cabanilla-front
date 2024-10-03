@@ -22,7 +22,6 @@ import { Label } from "@/components/ui/label";
 import { useAllAreas } from "@/hooks/useQueryArea";
 import { CREATE_AREA_MUTATION } from "@/graphql/mutations";
 import { AreaManagment } from "./AreaManagment";
-import { Console } from "console";
 
 //  CAMPOS PARA LA CONSULTA
 const fieldsAreas = [
